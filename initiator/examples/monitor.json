@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "mode": "monitor",
+  "title": "已有任务监控",
+  "summary": "只读接入已部署的示例任务。打开页面前，将执行根改为目标电脑上的实际路径。",
+  "execution_root": "C:\\RemoteRunner\\example-run",
+  "manifest": "manifest.json",
+  "state_file": "C:\\RemoteRunner\\example-run\\control\\campaign_state.json"
+}

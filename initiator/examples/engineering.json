@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "title": "运行器工程验收",
+  "summary": "两个短时工程组验证训练转验证、共享并行额度和实时日志。仅执行 sleep/JSON helper，不运行科学实验。",
+  "source_root": "engineering",
+  "remote_root": "C:\\RemoteRunner\\smoke-test",
+  "files": ["tools/smoke_worker.py"],
+  "manifest_template": {
+    "results": "control",
+    "budget_seconds": 300,
+    "inputs": [{"path": "tools/smoke_worker.py"}],
+    "tasks": [
+      {
+        "id": "helper-A", "label": "工程组 A", "workspace": "helpers/A",
+        "argv": ["{python}", "{root}/tools/smoke_worker.py", "--group", "A", "--output", "{attempt}/train"],
+        "timeout_seconds": 120, "outputs": ["train/completion.json"], "progress_file": "train/progress.json",
+        "metadata": {"phase": "training", "group": "A", "episodes_total": 3, "validation_total": 4}
+      },
+      {
+        "id": "helper-B", "label": "工程组 B", "workspace": "helpers/B",
+        "argv": ["{python}", "{root}/tools/smoke_worker.py", "--group", "B", "--output", "{attempt}/train"],
+        "timeout_seconds": 120, "outputs": ["train/completion.json"], "progress_file": "train/progress.json",
+        "metadata": {"phase": "training", "group": "B", "episodes_total": 3, "validation_total": 4}
+      }
+    ]
+  }
+}

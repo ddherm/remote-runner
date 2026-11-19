@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>公共运行器</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="运行工作台">
+      <a class="brand" href="/" aria-label="公共运行器首页">
+        <svg class="brand-mark" viewBox="0 0 36 36" fill="none" aria-hidden="true" shape-rendering="crispEdges"><path d="M8 3h20v4h5v22h-5v4H8v-4H3V7h5V3Z" fill="currentColor"/><path d="M10 10h16v5H10zm0 11h16v5H10z" fill="#F1F5FC"/><path d="M12 11h3v3h-3zm0 11h3v3h-3z" fill="#1268FF"/></svg>
+        <span class="brand-copy"><strong>公共运行器</strong><small>实验工作台</small></span>
+      </a>
+      <div class="computer-heading"><h2>电脑</h2><button id="chooseComputers" class="text-button" type="button">选择电脑</button></div>
+      <nav id="computerNavigation" class="computer-navigation" aria-label="电脑页面"></nav>
+      <div class="sidebar-heading workspace-heading"><h2>工作区</h2><div class="segmented-control workspace-filter" role="group" aria-label="筛选工作区"><button id="activeWorkspaces" type="button" aria-pressed="true">当前</button><button id="archivedWorkspaces" type="button" aria-pressed="false">已归档</button></div></div>
+      <nav id="sessionNavigation" class="session-navigation" aria-label="选择工作区"></nav>
+      <div class="sidebar-bottom">
+        <div class="node-card">
+          <div class="node-card-heading"><span class="pixel-device" aria-hidden="true"></span><span>计算节点</span><span class="connection-dot" id="sidebarConnectionDot" aria-hidden="true"></span></div>
+          <strong id="sidebarHost">尚未选择电脑</strong>
+          <p id="sidebarHostState">连接目标电脑后开始运行</p>
+          <button id="sidebarSettings" class="node-settings" type="button"><span>连接设置</span><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg></button>
+        </div>
+        <p class="sidebar-note"><span class="pixel-led" aria-hidden="true"></span>Windows 独立运行<br>关闭页面不会停止实验</p>
+      </div>
+    </aside>
+
+    <div class="main-stage">
+      <header class="app-header">
+        <div class="workspace-breadcrumb"><span class="pixel-window" aria-hidden="true"></span><span>工作台</span><span class="breadcrumb-slash" aria-hidden="true">/</span><strong id="computerPageTitle">待分配</strong></div>
+        <div class="header-actions"><span id="previewBadge" class="preview-badge" hidden>设计预览 · 示例数据</span><div class="session-switch"><label class="visually-hidden" for="sessionSelect">当前工作区</label><select id="sessionSelect" aria-label="切换工作区"><option value="">暂无工作区</option></select></div></div>
+      </header>
+
+      <main class="workspace">
+        <div id="pageError" class="notice notice-error" role="alert" hidden></div>
+        <section class="experiment-heading" aria-labelledby="experimentTitle">
+          <div><h1 id="experimentTitle">准备一次远程运行</h1><p id="experimentSummary">在 Codex 对话中发起实验，运行设置会自动出现在这里。</p></div>
+          <div class="workspace-actions">
+            <span id="sessionStatus" class="status-badge">等待实验</span>
+            <span id="archivedBadge" class="status-badge" hidden>已归档</span>
+            <button id="archiveWorkspace" class="text-button" type="button" hidden>归档</button>
+            <button id="restoreWorkspace" class="text-button" type="button" hidden>恢复</button>
+            <button id="deleteWorkspace" class="text-button danger-text" type="button" hidden>删除</button>
+          </div>
+        </section>
+        <p id="previewNotice" class="preview-notice" hidden>设计预览，当前展示示例运行数据。</p>
+        <div id="phaseRail" class="phase-rail" aria-label="运行阶段"></div>
+    <section class="configuration panel" aria-labelledby="configHeading">
+      <div class="section-heading"><h2 id="configHeading">运行设置</h2><div class="configuration-heading-actions"><span id="configLock" class="muted" hidden>本次部署设置已固定</span><button id="toggleConfiguration" class="text-button" type="button" aria-expanded="false" aria-controls="configContent" hidden>查看运行设置</button></div></div>
+      <div id="configSummary" class="configuration-summary" hidden><div><span>目标电脑</span><strong id="summaryComputer">—</strong></div><div class="summary-directory"><span>目标文件夹</span><strong id="summaryDirectory">—</strong></div><div><span>批次并行上限</span><strong id="summaryParallel">—</strong></div><div><span>全机并行上限</span><strong id="summaryMachineLimit">—</strong></div></div>
+      <div id="configContent">
+      <form id="configForm">
+        <div class="configuration-grid">
+          <div class="target-settings">
+            <div class="field-label-row"><label for="hostAddress">目标电脑</label><div class="host-actions"><button id="historyButton" class="text-button" type="button" aria-expanded="false" aria-controls="hostHistory">历史连接 <span aria-hidden="true">⌄</span></button><button id="renameButton" class="text-button" type="button" disabled>重命名</button></div></div>
+            <div class="host-input-row"><div class="address-control"><span id="connectionDot" class="connection-dot" aria-hidden="true"></span><input id="hostAddress" name="address" type="text" placeholder="IP 地址或 SSH 别名" spellcheck="false" autocomplete="off" required><div id="hostHistory" class="host-history" hidden></div></div><button id="connectButton" class="button button-secondary" type="button">连接</button></div>
+            <p id="connectionHint" class="field-hint" aria-live="polite">连接成功后自动保存，可以为电脑重命名。</p>
+            <div class="folder-field"><label for="remoteRoot">目标文件夹</label><div class="input-action-row"><input id="remoteRoot" name="remote_root" type="text" placeholder="选择或输入 Windows 上的工作目录" spellcheck="false" autocomplete="off" required><button id="browseButton" class="button button-secondary" type="button">浏览</button></div><p id="folderHint" class="field-hint">代码与结果保存在此目录；目录不存在时，部署会自动创建。</p></div>
+          </div>
+          <div class="parallel-settings"><label for="parallel">并行上限</label><div class="number-control"><button id="decreaseParallel" type="button" aria-label="减少并行上限">−</button><input id="parallel" name="parallel" type="number" min="1" max="36" step="1" value="18" inputmode="numeric" required><button id="increaseParallel" type="button" aria-label="增加并行上限">+</button></div><p class="field-hint">本批次内所有组的训练、验证和测试共享。</p><div class="machine-limit"><span>全机并行上限</span><strong id="machineLimit">—</strong></div><p id="effectiveLimit" class="effective-limit" aria-live="polite">连接后读取目标电脑的设置。</p></div>
+        </div>
+
+        <details id="advancedSettings" class="advanced-settings"><summary>连接与机器设置</summary><div class="advanced-grid"><label>SSH 用户名<input id="sshUser" name="user" type="text" placeholder="沿用 SSH 配置" autocomplete="off" spellcheck="false"></label><label>SSH 端口<input id="sshPort" name="port" type="number" min="1" max="65535" value="22"></label><label class="wide-field">SSH 私钥路径<input id="identityFile" name="identity_file" type="text" placeholder="沿用 SSH 配置或 ssh-agent" autocomplete="off" spellcheck="false"></label><label class="wide-field">Windows Python 路径<input id="pythonPath" name="python" type="text" autocomplete="off" spellcheck="false"></label><label class="wide-field">公共运行器目录<input id="runtimeRoot" name="runtime_root" type="text" autocomplete="off" spellcheck="false"></label><label class="wide-field">全机计算槽目录<input id="slotRoot" name="slot_root" type="text" autocomplete="off" spellcheck="false"></label><div class="capacity-setting wide-field"><label for="capacityInput">全机并行上限</label><div class="capacity-controls"><input id="capacityInput" type="number" min="1" max="36" step="1" value="18" inputmode="numeric" disabled><button id="applyCapacity" class="button button-secondary" type="button" disabled>应用</button></div><p class="field-hint">可设为 1–36。仅在计算和派发任务全部结束后可调整；不会停止当前任务。</p><p id="capacityMessage" class="field-hint" aria-live="polite" hidden></p></div></div></details>
+        <div class="deployment-action"><p id="deploymentHint">确认实验摘要和运行设置后开始部署。</p><button id="assignWorkspace" class="button button-secondary" type="button" hidden>保存到此电脑</button><button id="deployButton" class="button button-primary" type="submit" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6V4Z" fill="currentColor"/></svg><span>部署并运行</span></button></div>
+      </form>
+      </div>
+    </section>
+
+
+        <section class="progress-section" aria-labelledby="progressHeading">
+          <div class="overall-panel panel">
+            <div class="section-heading"><h2 id="progressHeading"><span class="section-mark" aria-hidden="true"><span></span></span>运行总览</h2><button id="reconnectButton" class="text-button" type="button" hidden>重新连接</button><span id="refreshLabel" class="muted">每 5 秒刷新</span></div>
+            <div id="staleNotice" class="notice notice-warning" role="status" hidden></div>
+            <div id="snapshotWarnings" class="notice notice-warning" role="status" hidden></div>
+            <div class="overall-body">
+              <div class="overall-visual">
+                <div id="overallTrack" class="progress-dial dial-large" role="progressbar" aria-label="总进度">
+                  <div id="overallDialFace" class="dial-graphic" aria-hidden="true"></div>
+                  <div class="dial-center"><div id="overallPercent" class="overall-percent">—</div><span class="dial-caption">总体完成</span></div>
+                  <span id="overallFill" class="legacy-progress-fill" hidden></span>
+                </div>
+                <p id="overallDetail" class="overall-detail">部署后显示完成工作量</p>
+              </div>
+              <div class="overview-details">
+                <div class="overview-caption"><span class="pixel-indicator" aria-hidden="true"></span><span>当前计算状态</span></div>
+                <div class="progress-meta"><p id="parallelSummary">等待开始运行</p><p id="etaSummary">预计剩余 <strong>—</strong></p></div>
+                <div id="slotBoard" class="slot-board" aria-label="并行计算名额"></div>
+                <div id="deploymentEvents" class="deployment-events" hidden></div>
+              </div>
+            </div>
+          </div>
+          <div id="tasksEmpty" class="empty-state"><span class="empty-pixels" aria-hidden="true"></span><h3>等待一次新的运行</h3><p>各组训练、验证和测试会分别显示在这里。</p></div>
+          <div id="taskList" class="task-list"></div>
+          <section id="workersSection" class="workers-section" hidden><div class="subsection-heading"><h3><span class="pixel-grid" aria-hidden="true"></span>正在计算的任务</h3><span id="workerCount" class="muted"></span></div><div id="workerList" class="worker-list"></div></section>
+        </section>
+
+        <section class="resource-panel panel" aria-labelledby="resourceHeading">
+          <div class="section-heading"><h2 id="resourceHeading"><span class="section-mark" aria-hidden="true"><span></span></span>机器资源</h2><span id="globalUsage" class="muted">全机正在计算 — / —</span></div>
+          <div class="resources-grid">
+            <div class="resource-item"><div class="resource-visual"><div id="cpuDial" class="resource-dial-graphic" aria-hidden="true"></div><strong id="cpuValue" class="resource-dial-value">—</strong></div><div class="resource-copy"><span class="resource-title">CPU</span><p id="cpuDetail">等待连续采样</p></div><span id="cpuFill" class="legacy-progress-fill" hidden></span></div>
+            <div class="resource-item"><div class="resource-visual"><div id="memoryDial" class="resource-dial-graphic" aria-hidden="true"></div><strong id="memoryValue" class="resource-dial-value">—</strong></div><div class="resource-copy"><span class="resource-title">内存</span><p id="memoryDetail">等待采样</p></div><span id="memoryFill" class="legacy-progress-fill" hidden></span></div>
+            <div id="gpuResources" class="gpu-resources"><div class="resource-item"><div class="resource-visual"><div class="resource-dial-graphic" aria-hidden="true"></div><strong class="resource-dial-value">—</strong></div><div class="resource-copy"><span class="resource-title">GPU</span><p>连接后读取设备信息</p></div></div></div>
+          </div>
+          <div class="resource-footer"><span id="resourceHost">尚未连接目标电脑</span><span id="updatedAt">尚无采样数据</span></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="computerDialog" class="computer-dialog" aria-labelledby="computerDialogTitle"><form id="computerForm">
+    <div class="dialog-heading"><h2 id="computerDialogTitle">选择电脑</h2><button class="icon-button" type="button" data-close="computerDialog" aria-label="关闭电脑选择">×</button></div>
+    <p class="dialog-description">可同时选择多台电脑。每台电脑都有自己的工作区页面。</p>
+    <div id="computerChoices" class="computer-choices"></div>
+    <div class="dialog-footer computer-dialog-footer"><button id="addComputer" class="text-button" type="button">添加电脑</button><button class="button button-secondary" type="button" data-close="computerDialog">取消</button><button class="button button-primary" type="submit">应用</button></div>
+  </form></dialog>
+
+  <dialog id="deleteDialog" class="delete-dialog" aria-labelledby="deleteDialogTitle" aria-describedby="deleteDescription"><form id="deleteForm">
+    <div class="dialog-heading"><h2 id="deleteDialogTitle">删除工作区？</h2></div>
+    <p id="deleteDescription" class="dialog-description"></p>
+    <p id="deleteError" class="notice notice-error" role="alert" hidden></p>
+    <div class="dialog-footer"><button id="cancelDelete" class="button button-secondary" type="button" data-close="deleteDialog" autofocus>取消</button><button id="confirmDelete" class="button button-danger" type="submit">删除记录</button></div>
+  </form></dialog>
+
+  <dialog id="folderDialog" class="folder-dialog"><form id="folderForm" method="dialog"><div class="dialog-heading"><h2>选择目标文件夹</h2><button class="icon-button" type="button" data-close="folderDialog" aria-label="关闭文件夹浏览">×</button></div><p class="dialog-description">浏览目标电脑上的文件夹。</p><div class="input-action-row"><input id="browsePath" aria-label="远端文件夹路径" placeholder="选择盘符或输入完整路径" spellcheck="false" autocomplete="off"><button id="browseGo" class="button button-secondary" type="button">前往</button></div><nav id="breadcrumbs" class="breadcrumbs" aria-label="文件夹路径"></nav><div id="browseError" class="notice notice-error" role="alert" hidden></div><div id="directoryList" class="directory-list" aria-live="polite"></div><div class="dialog-footer"><button class="button button-secondary" type="button" data-close="folderDialog">取消</button><button id="useFolderButton" class="button button-primary" type="button" disabled>选择此文件夹</button></div></form></dialog>
+
+  <dialog id="renameDialog" class="rename-dialog"><form id="renameForm"><div class="dialog-heading"><h2>重命名目标电脑</h2><button class="icon-button" type="button" data-close="renameDialog" aria-label="关闭重命名">×</button></div><label for="hostLabel">电脑名称</label><input id="hostLabel" type="text" maxlength="80" autocomplete="off" required><p id="renameError" class="field-hint error-text" hidden></p><div class="dialog-footer"><button class="button button-secondary" type="button" data-close="renameDialog">取消</button><button class="button button-primary" type="submit">保存名称</button></div></form></dialog>
+
+  <dialog id="logDialog" class="log-dialog"><div class="dialog-heading"><div><h2 id="logTitle">任务日志</h2><p id="logAttempt" class="dialog-description"></p></div><button class="icon-button" type="button" data-close="logDialog" aria-label="关闭日志">×</button></div><div class="log-toolbar"><div class="segmented-control" role="group" aria-label="日志类型"><button type="button" data-log-stream="stdout" aria-pressed="true">标准输出</button><button type="button" data-log-stream="stderr" aria-pressed="false">错误输出</button></div><label class="checkbox-label"><input id="followLog" type="checkbox" checked>跟随最新</label><button id="refreshLog" class="text-button" type="button">刷新</button></div><div id="logError" class="notice notice-error" role="alert" hidden></div><pre id="logContent" class="log-content" tabindex="0">正在读取日志…</pre><div class="log-footer">日志按需增量读取，原始文件保留在目标电脑。</div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
